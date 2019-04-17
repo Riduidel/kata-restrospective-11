@@ -1,21 +1,12 @@
 package fr.umlv.lexer;
 
-import java.util.Objects;
 import java.util.Optional;
 
 // TODO
-public class Lexer<Type> {
-	
-	private static Lexer lexer;
-	
+public interface Lexer<Type> {
 	public static <Type> Lexer<Type> create() {
-		if(lexer==null)
-			lexer = new Lexer<>();
-		return lexer;
+		return NonWorking.<Type>create();
 	}
 
-	public Optional<Type> tryParse(String text) {
-		Objects.requireNonNull(text);
-		return Optional.empty();
-	}
+	public Optional<Type> tryParse(String string);
 }
