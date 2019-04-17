@@ -2,6 +2,7 @@ package fr.umlv.lexer;
 
 import java.util.Objects;
 import java.util.Optional;
+import java.util.function.Function;
 import java.util.regex.Pattern;
 
 // TODO
@@ -19,4 +20,6 @@ public interface Lexer<Type> {
 	public static <Type> Lexer<Type> from(String text) {
 		return from(Pattern.compile(text));
 	}
+
+	public <Returned> Lexer<Returned> map(Function<String, Returned> mapper);
 }
