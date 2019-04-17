@@ -8,13 +8,13 @@ import java.util.regex.Pattern;
 public class PatternLexer<Type> implements Lexer<Type> {
 
 	private Pattern pattern;
-	private Function<String, Type> mapper;
+	private Function<? super String, Type> mapper;
 
 	public PatternLexer(Pattern pattern) {
 		this(pattern, value -> (Type) value);
 	}
 
-	public PatternLexer(Pattern pattern, Function<String, Type> mapper) {
+	public PatternLexer(Pattern pattern, Function<? super String, Type> mapper) {
 		this.pattern = pattern;
 		this.mapper = mapper;
 	}
@@ -32,9 +32,9 @@ public class PatternLexer<Type> implements Lexer<Type> {
 	}
 
 	@Override
-	public <Returned> Lexer<Returned> map(Function<String, Returned> mapper) {
+	public <Returned> Lexer<Returned> map(Function<? super String, Returned> mapper) {
 		Objects.requireNonNull(mapper, "Frankly speaking, using a null mapper is just dumbass, no ?");
-		return new PatternLexer<>(pattern, mapper);
+		return new PatternLexer<Returned>(pattern, mapper);
 	}
 
 }

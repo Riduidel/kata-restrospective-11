@@ -21,7 +21,7 @@ public class CombinedLexer<Type> implements Lexer<Type> {
 	}
 
 	@Override
-	public <Returned> Lexer<Returned> map(Function<String, Returned> mapper) {
+	public <Returned> Lexer<Returned> map(Function<? super String, Returned> mapper) {
 		throw new UnsupportedOperationException();
 	}
 

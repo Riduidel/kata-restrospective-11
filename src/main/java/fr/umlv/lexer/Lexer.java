@@ -21,10 +21,22 @@ public interface Lexer<Type> {
 		return from(Pattern.compile(text));
 	}
 
-	public <Returned> Lexer<Returned> map(Function<String, Returned> mapper);
+	public <Returned> Lexer<Returned> map(Function<? super String, Returned> mapper);
 	
 	public default Lexer<Type> or(Lexer<Type> other) {
 		Objects.requireNonNull(other);
 		return new CombinedLexer(this, other);
+	}
+	
+	public default Lexer<Type> with(Pattern pattern, Function<? super String, Type> mapper) {
+		Objects.requireNonNull(pattern, "pattern should not be null");
+		Objects.requireNonNull(mapper, "mapper should not be null");
+		return or(from(pattern).map(mapper));
+	}
+	
+	public default Lexer<Type> with(String string, Function<? super String, Type> mapper) {
+		Objects.requireNonNull(string, "pattern should not be null");
+		Objects.requireNonNull(mapper, "mapper should not be null");
+		return or(from(string).map(mapper));
 	}
 }
