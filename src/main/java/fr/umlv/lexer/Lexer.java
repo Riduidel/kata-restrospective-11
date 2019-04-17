@@ -1,5 +1,6 @@
 package fr.umlv.lexer;
 
+import java.util.Collection;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
@@ -38,5 +39,19 @@ public interface Lexer<Type> {
 		Objects.requireNonNull(string, "pattern should not be null");
 		Objects.requireNonNull(mapper, "mapper should not be null");
 		return or(from(string).map(mapper));
+	}
+	
+	public static <Type> Lexer<Type> from(Collection<String> patterns, Collection<Function<? super String, Type>> mappers) {
+		Objects.requireNonNull(patterns, "patterns should not be null");
+		Objects.requireNonNull(mappers, "mappers should not be null");
+		if(patterns.size()!=mappers.size())
+			throw new IllegalArgumentException(String.format("both lists should be of the same size. patterns contains %d elements but mappers %d", patterns.size(), mappers.size()));
+		var first = patterns.iterator();
+		var second = mappers.iterator();
+		Lexer<Type> returned = create();
+		while(first.hasNext() && second.hasNext()) {
+			returned = returned.with(first.next(), second.next());
+		}
+		return returned;
 	}
 }
