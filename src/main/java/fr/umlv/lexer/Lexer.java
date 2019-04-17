@@ -27,13 +27,13 @@ public interface Lexer<Type> {
 		return from(Pattern.compile(pattern));
 	}
 
-	static Lexer<Object> from(List<String> patterns, List<Function<? super String, Object>> mappers) {
+	static <Type> Lexer<Type> from(List<String> patterns, List<? extends Function<? super String, ? extends Object>> mappers) {
 		return fromP(patterns.stream()
 							.map(Pattern::compile)
 							.collect(Collectors.toList())
 				, mappers);
 	}
-	static Lexer<Object> fromP(List<Pattern> patterns, List<Function<? super String, Object>> mappers) {
+	static <Type> Lexer<Type> fromP(List<Pattern> patterns, List<? extends Function<? super String, ? extends Object>> mappers) {
 		Objects.requireNonNull(patterns);
 		Objects.requireNonNull(mappers);
 		if(patterns.size()!=mappers.size())
@@ -44,9 +44,9 @@ public interface Lexer<Type> {
 					);
 		var pat = patterns.iterator();
 		var map = mappers.iterator();
-		var returned = create();
+		Lexer<Type> returned = create();
 		while(pat.hasNext()&&map.hasNext()) {
-			returned = returned.with(pat.next(), map.next());
+			returned = (Lexer<Type>) returned.with(pat.next(), map.next());
 		}
 		return returned;
 	}
@@ -84,11 +84,11 @@ public interface Lexer<Type> {
 		return new OrLexer(this, other);
 	}
 	
-	public default Lexer<Object> with(String pattern, Function<? super String, Object> mapper) {
+	public default Lexer<Object> with(String pattern, Function<? super String, ? extends Object> mapper) {
 		Objects.requireNonNull(pattern);
 		return with(Pattern.compile(pattern), mapper);
 	}
-	public default Lexer<Object> with(Pattern pattern, Function<? super String, Object> mapper) {
+	public default Lexer<Object> with(Pattern pattern, Function<? super String, ? extends Object> mapper) {
 		Objects.requireNonNull(pattern);
 		Objects.requireNonNull(mapper);
 		return new OrLexer(this, from(pattern).map(mapper));

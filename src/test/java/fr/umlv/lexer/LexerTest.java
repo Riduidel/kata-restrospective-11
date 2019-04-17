@@ -314,7 +314,7 @@ public class LexerTest {
       () -> assertTrue(lexer.tryParse("").isEmpty())
     );
   }
-  /*
+
   @Tag("Q6") @Test
   public void testFromTwoListsNonMutable() {
     var regexes = new ArrayList<String>();
@@ -379,8 +379,7 @@ public class LexerTest {
       () -> assertThrows(IllegalArgumentException.class, () -> Lexer.<Object>from(List.of(), List.of(x -> x)))
       );
   }
-  /*
-   * bad capturing group number
+
   @Tag("Q6") @Test
   public void testFromTwoListsNotOnlyOneGroup() {
     assertAll(
