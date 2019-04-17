@@ -22,4 +22,9 @@ public interface Lexer<Type> {
 	}
 
 	public <Returned> Lexer<Returned> map(Function<String, Returned> mapper);
+	
+	public default Lexer<Type> or(Lexer<Type> other) {
+		Objects.requireNonNull(other);
+		return new CombinedLexer(this, other);
+	}
 }
