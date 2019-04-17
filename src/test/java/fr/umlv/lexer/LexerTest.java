@@ -89,15 +89,14 @@ public class LexerTest {
         () -> assertTrue(lexer.tryParse("ba").isEmpty())
         );
   }
-  /*
-   * bad capturing group number
+
   @Tag("Q2") @ParameterizedTest @MethodSource("lexerFactories")
   public void testFromOnlyOneCaptureGroup(LexerFactory factory) {
     assertAll(
       () -> assertThrows(IllegalArgumentException.class, () -> factory.create("foo")),
       () -> assertThrows(IllegalArgumentException.class, () -> factory.create("(foo)(bar)"))
       );
-  }*/
+  }
   @Tag("Q2") @ParameterizedTest @MethodSource("lexerFactories")
   public void testFromTryParseNull(LexerFactory factory) {
     assertThrows(NullPointerException.class, () -> factory.create("(foo)").tryParse(null));
@@ -109,7 +108,6 @@ public class LexerTest {
         () -> assertThrows(NullPointerException.class, () -> Lexer.from((String)null))
         );
   }
-
 
   @Tag("Q3") @Test
   public void testMapRecognized() {
@@ -146,7 +144,7 @@ public class LexerTest {
     Lexer<Object> lexer = Lexer.from("([0-9]+)").map(Integer::parseInt);
     assertEquals(747, (int)lexer.tryParse("747").orElseThrow());
   }
-  
+
   @Tag("Q4") @Test
   public void testOr() {
     var lexer = Lexer.from("([0-9]+)").or(Lexer.from("([a-z_]+)"));
@@ -234,8 +232,7 @@ public class LexerTest {
       () -> assertEquals(3, (int)lexer3.tryParse("aaab").orElseThrow())
     );
   }
-  /*
-   * bad capturing group number
+
   @Tag("Q5") @Test
   public void testWithOneCaptureGroup() {
     assertAll(
@@ -243,7 +240,7 @@ public class LexerTest {
       () -> assertThrows(IllegalArgumentException.class, () -> Lexer.create().with("(foo)(bar)", x -> x))
       );
   }
-   */
+   
   @Tag("Q5") @Test
   public void testWithSomeNulls() {
     assertAll(
@@ -286,8 +283,7 @@ public class LexerTest {
         () -> assertTrue(lexer.tryParse("XXX").isEmpty())
         );
   }
-  
-/*
+
   @Tag("Q6") @Test
   public void testFromTwoLists() {
     var lexer = Lexer.from(
@@ -318,6 +314,7 @@ public class LexerTest {
       () -> assertTrue(lexer.tryParse("").isEmpty())
     );
   }
+  /*
   @Tag("Q6") @Test
   public void testFromTwoListsNonMutable() {
     var regexes = new ArrayList<String>();
@@ -337,6 +334,7 @@ public class LexerTest {
         () -> assertTrue(lexer.tryParse("42").isEmpty())
         );
   }
+  
   @Tag("Q6") @Test
   public void testFromTwoListsOr() {
     var lexer = Lexer.from(List.of("(short)"), List.of(__ -> 0))
@@ -390,7 +388,7 @@ public class LexerTest {
       () -> assertThrows(IllegalArgumentException.class, () -> Lexer.<Object>from(List.of("(foo)", "(bar)(baz)"), List.of(x -> x, x -> x)))
       );
   }
-  */
+  
   @Tag("Q6") @Test
   public void testFromTwoListsNull() {
     assertAll(
@@ -402,7 +400,6 @@ public class LexerTest {
         () -> assertThrows(NullPointerException.class, () -> Lexer.from(List.of("(foo)"), List.of(x ->x)).tryParse(null))
         );
   }
-  
   
   @Tag("Q7") @Test
   public void testFromTwoListsMapOptimization() {
@@ -454,7 +451,6 @@ public class LexerTest {
       () -> assertTrue(lexer3.tryParse("aa").isPresent())
     );
   }
-  
   
   @Tag("Q8") @Test
   public void testFromTwoListsWithOptimization() {
@@ -523,5 +519,6 @@ public class LexerTest {
       () -> assertEquals("42", lexer2.tryParse("42").orElseThrow()),
       () -> assertEquals("hello", lexer2.tryParse("hello").orElseThrow())
     );
-  }*/
+  }
+  */
 }

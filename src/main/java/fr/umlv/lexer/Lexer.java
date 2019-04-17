@@ -1,57 +1,96 @@
 package fr.umlv.lexer;
 
-import java.util.Collection;
+import java.util.List;
 import java.util.Objects;
 import java.util.Optional;
 import java.util.function.Function;
 import java.util.regex.Pattern;
+import java.util.stream.Collectors;
 
-// TODO
 public interface Lexer<Type> {
-	public static <Type> Lexer<Type> create() {
-		return NonWorking.<Type>create();
+	static final Pattern REGEXP_DETECTOR = Pattern.compile(".*\\(^\\)\\).*");
+	
+	static Lexer<String> noop = new NoopLexer();
+
+	static <Type> Lexer<Type> create() {
+		return (Lexer<Type>) noop;
 	}
 
-	public Optional<Type> tryParse(String string);
-	
-	public static <Type> Lexer<Type> from(Pattern pattern) {
-		Objects.requireNonNull(pattern, "pattern is null, and it shouldn't be null");
+	static Lexer<String> from(Pattern pattern) {
+		Objects.requireNonNull(pattern, "pattern must not be null");
+		analyzePattern(pattern.pattern());
 		return new PatternLexer(pattern);
 	}
-	public static <Type> Lexer<Type> from(String text) {
-		return from(Pattern.compile(text));
+
+	static Lexer<String> from(String pattern) {
+		Objects.requireNonNull(pattern, "pattern must not be null");
+		return from(Pattern.compile(pattern));
 	}
 
-	public <Returned> Lexer<Returned> map(Function<? super String, Returned> mapper);
-	
-	public default Lexer<Type> or(Lexer<Type> other) {
-		Objects.requireNonNull(other);
-		return new CombinedLexer(this, other);
+	static Lexer<Object> from(List<String> patterns, List<Function<? super String, Object>> mappers) {
+		return fromP(patterns.stream()
+							.map(Pattern::compile)
+							.collect(Collectors.toList())
+				, mappers);
 	}
-	
-	public default Lexer<Type> with(Pattern pattern, Function<? super String, Type> mapper) {
-		Objects.requireNonNull(pattern, "pattern should not be null");
-		Objects.requireNonNull(mapper, "mapper should not be null");
-		return or(from(pattern).map(mapper));
-	}
-	
-	public default Lexer<Type> with(String string, Function<? super String, Type> mapper) {
-		Objects.requireNonNull(string, "pattern should not be null");
-		Objects.requireNonNull(mapper, "mapper should not be null");
-		return or(from(string).map(mapper));
-	}
-	
-	public static <Type> Lexer<Type> from(Collection<String> patterns, Collection<Function<? super String, Type>> mappers) {
-		Objects.requireNonNull(patterns, "patterns should not be null");
-		Objects.requireNonNull(mappers, "mappers should not be null");
+	static Lexer<Object> fromP(List<Pattern> patterns, List<Function<? super String, Object>> mappers) {
+		Objects.requireNonNull(patterns);
+		Objects.requireNonNull(mappers);
 		if(patterns.size()!=mappers.size())
-			throw new IllegalArgumentException(String.format("both lists should be of the same size. patterns contains %d elements but mappers %d", patterns.size(), mappers.size()));
-		var first = patterns.iterator();
-		var second = mappers.iterator();
-		Lexer<Type> returned = create();
-		while(first.hasNext() && second.hasNext()) {
-			returned = returned.with(first.next(), second.next());
+			throw new IllegalArgumentException(
+					String.format("can't have different sizes in patterns (%d, args) and matchers (%d)",
+							patterns.size(),
+							mappers.size())
+					);
+		var pat = patterns.iterator();
+		var map = mappers.iterator();
+		var returned = create();
+		while(pat.hasNext()&&map.hasNext()) {
+			returned = returned.with(pat.next(), map.next());
 		}
 		return returned;
+	}
+
+	static void analyzePattern(String pattern) {
+		var good = true;
+		var first = pattern.indexOf('(');
+		if (first < 0) {
+			good = false;
+		} else {
+			good = pattern.indexOf('(', first + 1) < 0;
+			if (good) {
+				var last = pattern.indexOf(')');
+				if (last > 0) {
+					good = pattern.indexOf(')', last + 1) < 0;
+				} else {
+					good = false;
+				}
+			}
+		}
+		if (!good)
+			throw new IllegalArgumentException(
+					String.format("Can't use pattern %s - it doesn't have the right number of groups", pattern));
+	}
+
+	Optional<Type> tryParse(String string);
+	
+	public default <Transformed> Lexer<Transformed> map(Function<? super Type, Transformed> mapper) {
+		Objects.requireNonNull(mapper, "mapper can't be null!");
+		return new MapperLexer<Type, Transformed>(this, mapper);
+	}
+
+	public default Lexer<Object> or(Lexer<?> other) {
+		Objects.requireNonNull(other, "Other lexer can't be null");
+		return new OrLexer(this, other);
+	}
+	
+	public default Lexer<Object> with(String pattern, Function<? super String, Object> mapper) {
+		Objects.requireNonNull(pattern);
+		return with(Pattern.compile(pattern), mapper);
+	}
+	public default Lexer<Object> with(Pattern pattern, Function<? super String, Object> mapper) {
+		Objects.requireNonNull(pattern);
+		Objects.requireNonNull(mapper);
+		return new OrLexer(this, from(pattern).map(mapper));
 	}
 }
